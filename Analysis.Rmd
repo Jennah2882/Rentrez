@@ -1,15 +1,16 @@
 ---title: "BIOL432_A7" author: "Jennah Levac" date: "2025-02-24" output: html_document ---
 
-```{r}
+Jennah Levac (20169998), Grace Wolfe (20302888), Cameron DeBellefeuille (20324416), Harnaaz Sandhu (20258736)
+
+### Part 1
+```{r, message=FALSE, warning=FALSE}
 library(rentrez)
 ```
-
 ```{r}
 Data<- read.csv("Sequences.csv")
 ```
 
 Creating a custom function to count the number of each nucleotide excluding headers, newlines, etc.
-
 ```{r}
 count_nucleotides <- function(seq) {
   seq <- gsub("[^ATCG]", "", seq)
@@ -23,36 +24,33 @@ count_nucleotides <- function(seq) {
 ```
 
 Creating an empty matrix to store nucleotide counts
-
 ```{r}
-nucleotide_counts <- matrix(0, nrow = nrow(Sequences), ncol = 4)
+nucleotide_counts <- matrix(0, nrow = nrow(Data), ncol = 4)
 colnames(nucleotide_counts) <- c("A", "T", "C", "G")
 ```
 
 Using a loop to apply counts to each sequence and converting to dataframe
-
 ```{r}
-for (i in 1:nrow(Sequences)) {
-  nucleotide_counts[i, ] <- count_nucleotides(Sequences$Sequence[i])}
+for (i in 1:nrow(Data)) {
+  nucleotide_counts[i, ] <- count_nucleotides(Data$Sequence[i])}
 
-nucleotide_counts_df <- data.frame(nucleotide_counts)
+CountsDF <- data.frame(nucleotide_counts)
 ```
 
 Printing each sequence
 ```{r}
-for (i in 1:nrow(Sequences)) {
-  print(paste("Sequence ID:", Sequences$Name[i]))
-  print(Sequences$Sequence[i])}
+for (i in 1:nrow(Data)) {
+  print(paste("Sequence ID:", Data$Name[i]))
+  print(Data$Sequence[i])}
 ```
-
 ```{r}
-print(nucleotide_counts_df)
+print(CountsDF)
 ```
 
 ![Borrelia burgdorferi](Borrelia_burgdorferi_(CDC-PHIL_-6631)_lores.jpg)
 Link: https://en.wikipedia.org/wiki/Borrelia_burgdorferi
 
-Calculating GC content
+Calculating GC content as percentages compiled into table
 ```{r}
 calculate_gc_content <- function(seq) {
   seq <- gsub("[^ATCG]", "", seq)
@@ -66,68 +64,67 @@ calculate_gc_content <- function(seq) {
   
   return(gc_content)}
 ```
-
 ```{r}
-Sequences$ID <- gsub("^>(.*?)(\\s|$).*", "\\1", Sequences$Name)
+Data$ID <- gsub("^>(.*?)(\\s|$).*", "\\1", Data$Name)
 
-Sequences$GC_Content <- sapply(Sequences$Sequence, calculate_gc_content)
+Data$GC_Content <- sapply(Data$Sequence, calculate_gc_content)
 
 gc_content_table <- data.frame(
-  Sequence_ID = Sequences$ID,
-  GC_Content = paste(round(Sequences$GC_Content, 2), "%", sep = ""))
+  Sequence_ID = Data$ID,
+  GC_Content = paste(round(Data$GC_Content, 2), "%", sep = ""))
 
 print(gc_content_table)
 ```
+
 ## Part 2
-```{r}
+
+```{r, message=FALSE, warning=FALSE}
 library(Biostrings)
+library(annotate)
 ```
 ```{r}
 MySequence <- "GCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATGACCTCGCAAGAGCAAAGTGGGGGACCTTAGGGCCTCACGCCATCGGATGAACCCAGATGGGATTAGCTAGTAGGTGGGGTAATGGCTCACCTAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAA"
 ```
-```{r}
-library(annotate)
-```
+Performing blast to identify matching sequences
 ```{r}
 blast_results <- blastSequences(MySequence, as='data.frame', 
                                 timeout=240, 
                                 hitListSize=5) 
 ```
 ```{r}
-New <- blast_results[!duplicated(blast_results$Hit_accession), ]
+New <- data.frame(blast_results[!duplicated(blast_results$Hit_accession), ])
 ```
 ```{r}
 relevant_columns <- New[,c(10, 11, 14, 15)]
 print(relevant_columns)
 ```
+GC content of each hit
 ```{r}
-calculate_gc_content2 <- function(seq) {
-  seq2 <- gsub("[^ATCG]", "", seq)
+gc_content <- function(sequence) {
+  g_count <- sum(grepl("G", strsplit(sequence, NULL)[[1]]))
+  c_count <- sum(grepl("C", strsplit(sequence, NULL)[[1]]))
   
-  G_count2 <- nchar(gsub("[^G]", "", seq))
-  C_count2 <- nchar(gsub("[^C]", "", seq))
-  
-  total_length2 <- nchar(seq)
-  
-  gc_content2 <- (G_count2 + C_count2) / total_length2 * 100
-  
-  return(gc_content2)}
-```
+  g_c_count <- g_count + c_count
+  return((g_c_count / nchar(sequence)) * 100)}
 
-```{r}
-New$ID <- gsub("^>(.*?)(\\s|$).*", "\\1", New$Name)
-New$GC_Content <- sapply(New$Hsp_hseq, calculate_gc_content2)
+New$gc_content <- sapply(New$Hsp_hseq, gc_content)
 
 gc_content_table2 <- data.frame(
-  Sequence_ID2 = New$ID,
-  GC_Content2 = paste(round(New$GC_Content, 2), "%", sep = ""))
+  Sequence_ID = New$Hit_accession,
+  GC_Content = paste(round(New$gc_content, 2), "%", sep = ""))
 
 print(gc_content_table2)
 ```
-```
-
-The species is another organism (bacteria)
+We can see from the results below in addition to similar GC content that the hits are closely similar to our unknonw sequence
 ```{r}
 print(New$Hit_def)
 ```
+Now we can confirm the sequence is not human DNA and must be investigated. 
 
+*Yersinia pestis*  is a pathogenic bacteria capable of surviving at temperatures similar to the internal mammalian environment. It has a large number of plasmid-borne virulence factors and is responsible for plague, with the most virulent form being pneumonic. Other forms of plague associated with this bacteria are bubonic and septicemic. 
+
+The ability for  this bacteria to avoid immune detection makes it infectious with great potential to progress to sepsis. Due to its extremely high mortality rate and virulence when left untreated, this is cause for concern.  Any patient who is suspected of plague should undergo further testing until cleared. Additionally, patients exposed should be isolated and public health officials should be notified to investigate the source of infection.
+
+Several antibiotics have been shown to effectively treat *Yersinia pestis* infections. These antibiotics include tetracyclines, fluoroquinolones, aminoglycosides, sulfonamides, chloramphenicol, rifamycin, and β-lactams, however, there has been mixed results about the efficacy of each antibiotic depending on the strain.
+
+The most common route of transmission is via fleas that have fed on infected rodents. The Pneumonic plague however is contagious and can be spread person-to-person through respiratory droplets. Due to the high virulence and potential for person-to-person spread Yersinia pestis poses public health concerns. 
