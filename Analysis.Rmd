@@ -125,6 +125,6 @@ Now we can confirm the sequence is not human DNA and must be investigated.
 
 The ability for  this bacteria to avoid immune detection makes it infectious with great potential to progress to sepsis. Due to its extremely high mortality rate and virulence when left untreated, this is cause for concern.  Any patient who is suspected of plague should undergo further testing until cleared. Additionally, patients exposed should be isolated and public health officials should be notified to investigate the source of infection.
 
-Several antibiotics have been shown to effectively treat *Yersinia pestis* infections. These antibiotics include tetracyclines, fluoroquinolones, aminoglycosides, sulfonamides, chloramphenicol, rifamycin, and β-lactams, however, there has been mixed results about the efficacy of each antibiotic depending on the strain.
-
 The most common route of transmission is via fleas that have fed on infected rodents. The Pneumonic plague however is contagious and can be spread person-to-person through respiratory droplets. Due to the high virulence and potential for person-to-person spread Yersinia pestis poses public health concerns. 
+
+Several antibiotics have been shown to effectively treat *Yersinia pestis* infections. These antibiotics include tetracyclines, fluoroquinolones, aminoglycosides, sulfonamides, chloramphenicol, rifamycin, and β-lactams, however, there has been mixed results about the efficacy of each antibiotic depending on the strain.
