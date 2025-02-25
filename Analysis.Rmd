@@ -2,7 +2,11 @@
 
 Jennah Levac (20169998), Grace Wolfe (20302888), Cameron DeBellefeuille (20324416), Harnaaz Sandhu (20258736)
 
+Github link: https://github.com/Jennah2882/Rentrez/tree/main
+
 ### Part 1
+
+## Step 4
 ```{r, message=FALSE, warning=FALSE}
 library(rentrez)
 ```
@@ -48,9 +52,10 @@ print(CountsDF)
 ```
 
 ![Borrelia burgdorferi](Borrelia_burgdorferi_(CDC-PHIL_-6631)_lores.jpg)
+
 Link: https://en.wikipedia.org/wiki/Borrelia_burgdorferi
 
-Calculating GC content as percentages compiled into table
+Calculating GC content as percentages
 ```{r}
 calculate_gc_content <- function(seq) {
   seq <- gsub("[^ATCG]", "", seq)
@@ -64,6 +69,8 @@ calculate_gc_content <- function(seq) {
   
   return(gc_content)}
 ```
+
+Creating GC content table
 ```{r}
 Data$ID <- gsub("^>(.*?)(\\s|$).*", "\\1", Data$Name)
 
@@ -85,19 +92,19 @@ library(annotate)
 ```{r}
 MySequence <- "GCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATGACCTCGCAAGAGCAAAGTGGGGGACCTTAGGGCCTCACGCCATCGGATGAACCCAGATGGGATTAGCTAGTAGGTGGGGTAATGGCTCACCTAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAA"
 ```
+
 Performing blast to identify matching sequences
-```{r}
+```{r, message=FALSE, warning=FALSE}
 blast_results <- blastSequences(MySequence, as='data.frame', 
                                 timeout=240, 
                                 hitListSize=5) 
 ```
+
+Excluding duplicates
 ```{r}
 New <- data.frame(blast_results[!duplicated(blast_results$Hit_accession), ])
 ```
-```{r}
-relevant_columns <- New[,c(10, 11, 14, 15)]
-print(relevant_columns)
-```
+
 GC content of each hit
 ```{r}
 gc_content <- function(sequence) {
@@ -115,11 +122,18 @@ gc_content_table2 <- data.frame(
 
 print(gc_content_table2)
 ```
-We can see from the results below in addition to similar GC content that the hits are closely similar to our unknonw sequence
+
+BLAST results
+```{r}
+relevant_columns <- New[,c(10, 11, 14, 15)]
+print(relevant_columns)
+```
+
+We can see from the results above in addition to similar GC content that the hits are very closely similar to our unknown sequence.
 ```{r}
 print(New$Hit_def)
 ```
-Now we can confirm the sequence is not human DNA and must be investigated. 
+Now we can confirm the sequence is not human DNA. 
 
 *Yersinia pestis*  is a pathogenic bacteria capable of surviving at temperatures similar to the internal mammalian environment. It has a large number of plasmid-borne virulence factors and is responsible for plague, with the most virulent form being pneumonic. Other forms of plague associated with this bacteria are bubonic and septicemic. 
 
