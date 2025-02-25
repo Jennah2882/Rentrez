@@ -1,0 +1,133 @@
+---title: "BIOL432_A7" author: "Jennah Levac" date: "2025-02-24" output: html_document ---
+
+```{r}
+library(rentrez)
+```
+
+```{r}
+Data<- read.csv("Sequences.csv")
+```
+
+Creating a custom function to count the number of each nucleotide excluding headers, newlines, etc.
+
+```{r}
+count_nucleotides <- function(seq) {
+  seq <- gsub("[^ATCG]", "", seq)
+  
+  A_count <- nchar(gsub("[^A]", "", seq))
+  T_count <- nchar(gsub("[^T]", "", seq))
+  C_count <- nchar(gsub("[^C]", "", seq))
+  G_count <- nchar(gsub("[^G]", "", seq))
+  
+  return(c(A = A_count, T = T_count, C = C_count, G = G_count))}
+```
+
+Creating an empty matrix to store nucleotide counts
+
+```{r}
+nucleotide_counts <- matrix(0, nrow = nrow(Sequences), ncol = 4)
+colnames(nucleotide_counts) <- c("A", "T", "C", "G")
+```
+
+Using a loop to apply counts to each sequence and converting to dataframe
+
+```{r}
+for (i in 1:nrow(Sequences)) {
+  nucleotide_counts[i, ] <- count_nucleotides(Sequences$Sequence[i])}
+
+nucleotide_counts_df <- data.frame(nucleotide_counts)
+```
+
+Printing each sequence
+```{r}
+for (i in 1:nrow(Sequences)) {
+  print(paste("Sequence ID:", Sequences$Name[i]))
+  print(Sequences$Sequence[i])}
+```
+
+```{r}
+print(nucleotide_counts_df)
+```
+
+![Borrelia burgdorferi](Borrelia_burgdorferi_(CDC-PHIL_-6631)_lores.jpg)
+Link: https://en.wikipedia.org/wiki/Borrelia_burgdorferi
+
+Calculating GC content
+```{r}
+calculate_gc_content <- function(seq) {
+  seq <- gsub("[^ATCG]", "", seq)
+  
+  G_count <- nchar(gsub("[^G]", "", seq))
+  C_count <- nchar(gsub("[^C]", "", seq))
+  
+  total_length <- nchar(seq)
+  
+  gc_content <- (G_count + C_count) / total_length * 100
+  
+  return(gc_content)}
+```
+
+```{r}
+Sequences$ID <- gsub("^>(.*?)(\\s|$).*", "\\1", Sequences$Name)
+
+Sequences$GC_Content <- sapply(Sequences$Sequence, calculate_gc_content)
+
+gc_content_table <- data.frame(
+  Sequence_ID = Sequences$ID,
+  GC_Content = paste(round(Sequences$GC_Content, 2), "%", sep = ""))
+
+print(gc_content_table)
+```
+## Part 2
+```{r}
+library(Biostrings)
+```
+```{r}
+MySequence <- "GCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATGACCTCGCAAGAGCAAAGTGGGGGACCTTAGGGCCTCACGCCATCGGATGAACCCAGATGGGATTAGCTAGTAGGTGGGGTAATGGCTCACCTAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAA"
+```
+```{r}
+library(annotate)
+```
+```{r}
+blast_results <- blastSequences(MySequence, as='data.frame', 
+                                timeout=240, 
+                                hitListSize=5) 
+```
+```{r}
+New <- blast_results[!duplicated(blast_results$Hit_accession), ]
+```
+```{r}
+relevant_columns <- New[,c(10, 11, 14, 15)]
+print(relevant_columns)
+```
+```{r}
+calculate_gc_content2 <- function(seq) {
+  seq2 <- gsub("[^ATCG]", "", seq)
+  
+  G_count2 <- nchar(gsub("[^G]", "", seq))
+  C_count2 <- nchar(gsub("[^C]", "", seq))
+  
+  total_length2 <- nchar(seq)
+  
+  gc_content2 <- (G_count2 + C_count2) / total_length2 * 100
+  
+  return(gc_content2)}
+```
+
+```{r}
+New$ID <- gsub("^>(.*?)(\\s|$).*", "\\1", New$Name)
+New$GC_Content <- sapply(New$Hsp_hseq, calculate_gc_content2)
+
+gc_content_table2 <- data.frame(
+  Sequence_ID2 = New$ID,
+  GC_Content2 = paste(round(New$GC_Content, 2), "%", sep = ""))
+
+print(gc_content_table2)
+```
+```
+
+The species is another organism (bacteria)
+```{r}
+print(New$Hit_def)
+```
+
